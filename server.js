@@ -1,9 +1,9 @@
 const express=require('express');
 const app=express();
-const dotenv=require('dotenv');
+
 const path=require('path');
 const cors=require('cors');
-dotenv.config({path:'./config.env'});
+require('dotenv').config();
 const mongoose=require('mongoose');
 const userRouter=require('./routes/UserRouter');
 const profileRouter=require('./routes/ProfileRouter');
