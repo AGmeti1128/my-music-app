@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music App</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    .navbar-brand img {
+      height: 40px;
+      margin-right: 10px;
+    }
+    .card audio {
+      outline: none;
+    }
+    .card {
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(90deg, #667eea, #764ba2);">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <img src="https://cdn-icons-png.flaticon.com/512/727/727218.png" alt="Music Logo">
+        <span class="fw-bold" style="letter-spacing:1px;">Music App</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <!-- 🔍 Search Bar -->
+        <li class="nav-item me-3">
+          <input type="text" id="searchInput" class="form-control form-control-sm"
+                 placeholder="Search music..." style="border-radius:20px; width:200px;">
+        </li>
+          <!-- Upload Music Button -->
+          <li class="nav-item me-3">
+            <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#uploadModal" style="border-radius:20px;">
+              <i class="bi bi-upload me-1"></i> Upload Music
+            </button>
+          </li>
+          <!-- Profile Dropdown -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" id="profileMenu" data-bs-toggle="dropdown">
+              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="User" class="rounded-circle me-2" id="profilePic" style="width:30px; height:30px;">
+              <span id="profileName">Loading...</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileMenu">
+              <li><a class="dropdown-item fw-bold" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">Edit Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="logout" onclick="logout()">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>  
+
+  <!-- Upload Music Modal -->
+  <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="uploadForm">
+          <div class="modal-header">
+            <h5 class="modal-title">Upload Music</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Dropdown for Title -->
+            <div class="mb-3">
+              <label for="title" class="form-label">Title</label>
+              <select class="form-select" id="title" required>
+                <option value="">Select Song Type</option>
+                <option value="Kannada Song">Kannada Song</option>
+                <option value="Hindi Song">Hindi Song</option>
+                <option value="Telugu Song">Telugu Song</option>
+                <option value="Tamil Song">Tamil Song</option>
+                <option value="English Song">English Song</option>
+              </select>
+            </div>
+  
+            <!-- Movie Name -->
+            <div class="mb-3">
+              <label for="movie" class="form-label">Movie Name</label>
+              <input class="form-control" type="text" id="movie" required>
+            </div>
+  
+            <!-- Music File -->
+            <div class="mb-3">
+              <label for="musicFile" class="form-label">Music File</label>
+              <input class="form-control" type="file" id="musicFile" required>
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Upload</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+
+  <!-- Profile Modal -->
+  <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="profileForm">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="newName" class="form-label">Name</label>
+              <input type="text" class="form-control" id="newName" required>
+            </div>
+            <div class="mb-3">
+              <label for="surname" class="form-label">Surname</label>
+              <input type="text" class="form-control" id="surname" required>
+            </div>
+            <div class="mb-3">
+              <label for="profileImage" class="form-label">Profile Picture</label>
+              <input type="file" class="form-control" id="profileImage" accept="image/*">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Update</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Music List -->
+  <div class="container mt-4">
+    <div class="row" id="musicList"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Logout function
+    async function logout() {
+      try {
+        const res = await fetch("/api/v1/logout", { method: "GET", credentials: "include" });
+        if(res.ok) 
+           window.location.href = "/api/v1/login";
+      } catch(err) { console.error("Error during logout:", err); }
+    }
+
+    // Load user profile
+    async function loadProfile() {
+  try {
+    const res = await fetch('/api/v1/profile', {
+      method: "GET",
+      credentials: "include"
+    });
+   
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    // Update DOM elements
+    document.getElementById('profileName').textContent = 'Hi ' + data.profile.name || "User";
+    document.getElementById('newName').value = data.profile.name || "";
+    document.getElementById('surname').value=data.profile.surname || "";
+    // Update profile picture if available, else fallback
+    const profilePicEl = document.getElementById('profilePic');
+    profilePicEl.src = data.profile.profileUrl || '/default-profile.png';
+
+  } catch (err) {
+    console.error("Failed to load profile:", err);
+  }
+}
+
+
+    // Load all music
+    async function loadMusic() {
+      try {
+        const res = await fetch('/api/v1/getAllMusic', { credentials: "include" });
+        const result = await res.json();
+        const musics = Array.isArray(result.musicList) ? result.musicList : [];
+        const musicList = document.getElementById('musicList');
+        musicList.innerHTML = '';
+
+        if(musics.length === 0) {
+          musicList.innerHTML = '<p>No music found</p>';
+          return;
+        }
+        
+
+        musics.forEach(music => {
+          const col = document.createElement('div');
+          col.className = 'col-md-3 col-sm-6 mb-4';
+
+          col.innerHTML = `
+            <div class="card text-white shadow-sm" style="border-radius: 15px; overflow: hidden; background: linear-gradient(135deg, #667eea, #764ba2);">
+              <img src="https://picsum.photos/300/200?random=${Math.floor(Math.random()*100)}" class="card-img-top" alt="Music Cover" style="height:200px; object-fit: cover;">
+              <div class="card-body">
+                <h5 class="card-title">${music.title}</h5>
+                <p class="card-text">${music.movie || ''}</p>
+                <audio controls src="${music.url}" class="w-100 mt-2"></audio>
+              </div>
+            </div>
+          `;
+          musicList.appendChild(col);
+        });
+      } catch(err) { console.error("Failed to load music:", err); }
+    }
+
+    // Handle music upload
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      const movie = document.getElementById('movie').value;
+      const fileInput = document.getElementById('musicFile');
+
+      if(!fileInput.files.length) { alert('Please select a music file!'); return; }
+
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('movie', movie);
+      formData.append('file', fileInput.files[0]);
+
+      try {
+        const res = await fetch('/api/v1/uploadMusic', { method:'POST', body:formData, credentials:'include' });
+        const result = await res.json();
+        if(result.status === 'success') {
+          alert('Music uploaded successfully!');
+          fileInput.value = '';
+          document.getElementById('title').value = '';
+          document.getElementById('movie').value = '';
+          bootstrap.Modal.getInstance(document.getElementById('uploadModal')).hide();
+          loadMusic();
+        } else alert('Upload failed: ' + result.message);
+      } catch(err) { alert('Error uploading music: ' + err.message); }
+    });
+
+    // Handle profile update
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('newName').value;
+      const surname = document.getElementById('surname').value;
+      const fileInput = document.getElementById('profileImage');
+
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('surname', surname);
+      if(fileInput.files.length > 0) formData.append('file', fileInput.files[0]);
+
+      try {
+        const res = await fetch('/api/v1/updateProfile', { method:'POST', body:formData, credentials:'include' });
+        const result = await res.json();
+        if(result.status === 'success') {
+          alert('Profile updated!');
+          document.getElementById('profileName').textContent = name;
+          if(result.profilePic) document.getElementById('profilePic').src = result.profilePic;
+          bootstrap.Modal.getInstance(document.getElementById('profileModal')).hide();
+        } else alert('Update failed: ' + result.message);
+      } catch(err) { alert('Error updating profile: ' + err.message); }
+    });
+
+    // Music search filter
+// Music search with backend API
+const searchInput = document.getElementById('searchInput');
+
+let searchTimeout;
+
+searchInput.addEventListener('input', function () {
+  const query = this.value.trim();
+
+  // Debounce to avoid too many API calls
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(async () => {
+    try {
+      const res = await fetch(`/api/v1/searchMusic?query=${encodeURIComponent(query)}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+      const result = await res.json();
+
+      const musics = Array.isArray(result.musicList) ? result.musicList : [];
+      const musicList = document.getElementById('musicList');
+      musicList.innerHTML = '';
+
+      if (musics.length === 0) {
+        musicList.innerHTML = '<p>No music found</p>';
+        return;
+      }
+
+      musics.forEach(music => {
+        const col = document.createElement('div');
+        col.className = 'col-md-3 col-sm-6 mb-4';
+
+        col.innerHTML = `
+          <div class="card text-white shadow-sm" style="border-radius: 15px; overflow: hidden; background: linear-gradient(135deg, #667eea, #764ba2);">
+            <img src="https://picsum.photos/300/200?random=${Math.floor(Math.random()*100)}" class="card-img-top" alt="Music Cover" style="height:200px; object-fit: cover;">
+            <div class="card-body">
+              <h5 class="card-title">${music.title}</h5>
+              <p class="card-text">${music.movie || ''}</p>
+              <audio controls src="${music.url}" class="w-100 mt-2"></audio>
+            </div>
+          </div>
+        `;
+        musicList.appendChild(col);
+      });
+
+    } catch (err) {
+      console.error("Search failed:", err);
+    }
+  }, 300); // wait 300ms after typing stops
+});
+
+
+    // Initialize
+    loadProfile();
+    loadMusic();
+  </script>
+</body>
+</html>
