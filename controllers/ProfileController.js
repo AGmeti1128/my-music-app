@@ -80,3 +80,28 @@ exports.getProfile = async (req, res) => {
     });
   }
 };
+
+exports.getUser=async (req,res)=>{
+try{
+  const user=await User.findOne(req.user._id);
+  if(!user)
+    return res.json({
+     status:'fail',
+     message:'user not found'
+  })
+ res.status(200).json({
+    status:'success',
+    user:user
+  })
+
+}
+catch(err)
+{
+  res.status(500).json({
+      status: 'fail',
+      message: err.message
+    });
+}
+  
+
+}
