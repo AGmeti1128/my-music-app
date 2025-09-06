@@ -1,5 +1,6 @@
 const Message = require('../models/MessageModel');
-
+const {sendSMS}=require('../controllers/smsService');
+const { disconnect } = require('mongoose');
 let onlineUsers = [];
 
 module.exports = (io) => {
@@ -12,7 +13,7 @@ module.exports = (io) => {
       const userEmail = user.email;
       socket.userId = userId;
       socket.userName = userEmail;
-
+      sendSMS(`🔔Notification: ${userEmail} is now online!`);
       console.log("User logged in:", userId, userEmail);
 
       if (!onlineUsers.find(u => u._id === userId)) {
@@ -58,8 +59,10 @@ module.exports = (io) => {
 
     // Disconnect
     socket.on("disconnect", () => {
+      const disconnctedUser=onlineUsers.find(u=>u.socketId === socket.id)
       onlineUsers = onlineUsers.filter(u => u.socketId !== socket.id);
       io.emit("onlineUsers", onlineUsers);
+     sendSMS(`🔔Notification: ${disconnctedUser.email} is logged out!`);
       console.log("Socket disconnected:", socket.id);
     });
   });
